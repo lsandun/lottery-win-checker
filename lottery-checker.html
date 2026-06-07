@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ලොතරැයි ටිකට් පරීක්ෂකය</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #f0c040;
+    --gold-light: #ffe580;
+    --gold-dim: #b8903a;
+    --bg-deep: #09090f;
+    --bg-card: #12121e;
+    --bg-input: #1a1a2e;
+    --border: #2a2a45;
+    --green: #22c55e;
+    --red: #ef4444;
+    --text: #e8e0cc;
+    --text-dim: #7a7088;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg-deep);
+    font-family: 'Noto Sans Sinhala', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,192,64,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 20% 80%, rgba(100,80,200,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-top: 12px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    border: 1px solid rgba(240,192,64,0.25);
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    background: rgba(240,192,64,0.04);
+  }
+
+  .title {
+    font-family: 'Noto Sans Sinhala', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dim) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  /* Ticket icon strip */
+  .ticket-strip {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: 0.3;
+  }
+  .dot.active { opacity: 1; }
+
+  /* Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(240,192,64,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Number inputs */
+  .numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .num-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .num-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .num-input {
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    color: var(--gold-light);
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  .num-input::-webkit-outer-spin-button,
+  .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .num-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(240,192,64,0.12);
+    background: #1e1e35;
+  }
+
+  .num-input::placeholder { color: #3a3560; font-size: 18px; }
+
+  /* Check button */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #c8960e 0%, var(--gold) 50%, #c8960e 100%);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Noto Sans Sinhala', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0a0a0f;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s, box-shadow 0.2s;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(240,192,64,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:hover { opacity: 0.92; box-shadow: 0 6px 28px rgba(240,192,64,0.35); }
+  .btn:active { transform: scale(0.98); }
+
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Reset button */
+  .btn-reset {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Noto Sans Sinhala', sans-serif;
+    font-size: 14px;
+    color: var(--text-dim);
+    cursor: pointer;
+    margin-top: 10px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-reset:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* Steps display */
+  .result-section {
+    margin-top: 24px;
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .result-section.show { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .steps-card {
+    background: rgba(26,26,46,0.6);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .step-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(42,42,69,0.5);
+    font-size: 14px;
+  }
+
+  .step-row:last-child { border-bottom: none; }
+
+  .step-label { color: var(--text-dim); font-size: 13px; }
+  .step-calc { color: var(--text); font-family: monospace; font-size: 14px; }
+  .step-val {
+    font-weight: 700;
+    color: var(--gold-light);
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+  }
+
+  .step-highlight {
+    background: rgba(240,192,64,0.06);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .step-highlight .step-label { font-weight: 600; color: var(--gold-dim); }
+  .step-highlight .step-val { font-size: 22px; color: var(--gold); }
+
+  /* Final result */
+  .verdict {
+    border-radius: 16px;
+    padding: 22px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid;
+  }
+
+  .verdict.win {
+    background: rgba(34,197,94,0.08);
+    border-color: rgba(34,197,94,0.3);
+    box-shadow: 0 0 30px rgba(34,197,94,0.08);
+  }
+
+  .verdict.lose {
+    background: rgba(239,68,68,0.07);
+    border-color: rgba(239,68,68,0.25);
+  }
+
+  .verdict-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+
+  .verdict-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .verdict.win .verdict-title { color: var(--green); }
+  .verdict.lose .verdict-title { color: var(--red); }
+
+  .verdict-sub { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+  /* Sparkle animation for win */
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  .sparkle {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+
+  .s1 { top: 15%; left: 10%; animation-delay: 0s; }
+  .s2 { top: 25%; right: 12%; animation-delay: 0.3s; }
+  .s3 { bottom: 20%; left: 18%; animation-delay: 0.6s; }
+  .s4 { bottom: 15%; right: 20%; animation-delay: 0.9s; }
+
+  /* Comparison row */
+  .compare-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 14px 0 10px;
+  }
+
+  .compare-box {
+    background: var(--bg-input);
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+  }
+
+  .compare-box small {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .compare-box span {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .compare-op {
+    font-size: 20px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .compare-op.equal { color: var(--green); }
+  .compare-op.not-equal { color: var(--red); }
+
+  /* Error */
+  .error-msg {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #fca5a5;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .error-msg.show { display: block; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 28px;
+    font-size: 11px;
+    color: var(--text-dim);
+    opacity: 0.5;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="header">
+    <div class="badge">🎰 Sri Lanka Lottery</div>
+    <h1 class="title">ලොතරැයි ටිකට්<br>Win Checker</h1>
+    <p class="subtitle">ඔබේ ticket එකේ ඇති ලකුණු 4 ඇතුළු කරන්න</p>
+  </div>
+
+  <div class="ticket-strip">
+    <div class="dot active" id="d1"></div>
+    <div class="dot" id="d2"></div>
+    <div class="dot" id="d3"></div>
+    <div class="dot" id="d4"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">ටිකට් අංක ඇතුළු කරන්න</div>
+
+    <div class="numbers-grid">
+      <div class="num-group">
+        <div class="num-label">1 වැනි</div>
+        <input type="number" class="num-input" id="n1" placeholder="00" min="0" max="99" maxlength="2">
+      </div>
+      <div class="num-group">
+        <div class="num-label">2 වැනි</div>
+        <input type="number" class="num-input" id="n2" placeholder="00" min="0" max="99" maxlength="2">
+      </div>
+      <div class="num-group">
+        <div class="num-label">3 වැනි</div>
+        <input type="number" class="num-input" id="n3" placeholder="00" min="0" max="99" maxlength="2">
+      </div>
+      <div class="num-group">
+        <div class="num-label">4 වැනි</div>
+        <input type="number" class="num-input" id="n4" placeholder="00" min="0" max="99" maxlength="2">
+      </div>
+    </div>
+
+    <button class="btn" onclick="checkTicket()">🔍 &nbsp; ටිකට් පරීක්ෂා කරන්න</button>
+    <button class="btn-reset" onclick="resetAll()">↺ &nbsp; නැවත පටන් ගන්න</button>
+
+    <div class="error-msg" id="errorMsg">⚠️ &nbsp; කරුණාකර සියලු ලකුණු 4 ඇතුළු කරන්න.</div>
+  </div>
+
+  <!-- Result Section -->
+  <div class="result-section" id="resultSection">
+
+    <div class="steps-card">
+      <div class="section-label">ගණනය කිරීම</div>
+
+      <div class="step-row">
+        <div class="step-label">2 - 1 &nbsp;=</div>
+        <div class="step-calc" id="calc1"></div>
+        <div class="step-val" id="val1"></div>
+      </div>
+      <div class="step-row">
+        <div class="step-label">3 - 2 &nbsp;=</div>
+        <div class="step-calc" id="calc2"></div>
+        <div class="step-val" id="val2"></div>
+      </div>
+      <div class="step-row">
+        <div class="step-label">4 - 3 &nbsp;=</div>
+        <div class="step-calc" id="calc3"></div>
+        <div class="step-val" id="val3"></div>
+      </div>
+
+      <div class="step-row" style="margin-top:4px;">
+        <div class="step-label">එකතුව</div>
+        <div class="step-calc" id="calcSum"></div>
+        <div class="step-val" id="valSum"></div>
+      </div>
+
+      <div class="step-highlight">
+        <div class="step-label">+ 1 වැනි අංකය</div>
+        <div class="step-calc" id="calcFinal"></div>
+        <div class="step-val" id="valFinal" style="color:var(--gold-light);font-size:24px;"></div>
+      </div>
+    </div>
+
+    <!-- Comparison -->
+    <div style="text-align:center; margin-bottom:16px;">
+      <p style="font-size:12px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px;">සසඳා බලන්න</p>
+      <div class="compare-row">
+        <div class="compare-box">
+          <small>ගණනය ප්‍රතිඵලය</small>
+          <span id="cmpCalc">—</span>
+        </div>
+        <div class="compare-op" id="cmpOp">≠</div>
+        <div class="compare-box">
+          <small>4 වැනි අංකය</small>
+          <span id="cmpN4">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verdict -->
+    <div class="verdict" id="verdict">
+      <span class="sparkle s1"></span>
+      <span class="sparkle s2"></span>
+      <span class="sparkle s3"></span>
+      <span class="sparkle s4"></span>
+      <span class="verdict-icon" id="verdictIcon">🎫</span>
+      <div class="verdict-title" id="verdictTitle">—</div>
+      <div class="verdict-sub" id="verdictSub">—</div>
+    </div>
+  </div>
+
+  <div class="footer">lottery checker · සිංහල</div>
+</div>
+
+<script>
+  const inputs = [
+    document.getElementById('n1'),
+    document.getElementById('n2'),
+    document.getElementById('n3'),
+    document.getElementById('n4')
+  ];
+
+  // Auto-advance on 2-digit input
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      if (inp.value.length >= 2 && i < 3) {
+        inputs[i + 1].focus();
+      }
+      updateDots();
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkTicket();
+    });
+  });
+
+  function updateDots() {
+    inputs.forEach((inp, i) => {
+      const dot = document.getElementById('d' + (i + 1));
+      dot.classList.toggle('active', inp.value.trim() !== '');
+    });
+  }
+
+  function checkTicket() {
+    const errorEl = document.getElementById('errorMsg');
+    const vals = inputs.map(i => i.value.trim());
+
+    // Validation
+    if (vals.some(v => v === '' || isNaN(v))) {
+      errorEl.classList.add('show');
+      document.getElementById('resultSection').classList.remove('show');
+      return;
+    }
+    errorEl.classList.remove('show');
+
+    const [n1, n2, n3, n4] = vals.map(Number);
+
+    // Calculations
+    const d1 = n2 - n1;
+    const d2 = n3 - n2;
+    const d3 = n4 - n3;
+    const sum = d1 + d2 + d3;
+    const final = sum + n1;
+    const isWin = final !== n4;
+
+    // Populate steps
+    document.getElementById('calc1').textContent = `${n2} − ${n1}`;
+    document.getElementById('val1').textContent = d1;
+
+    document.getElementById('calc2').textContent = `${n3} − ${n2}`;
+    document.getElementById('val2').textContent = d2;
+
+    document.getElementById('calc3').textContent = `${n4} − ${n3}`;
+    document.getElementById('val3').textContent = d3;
+
+    document.getElementById('calcSum').textContent = `${d1} + ${d2} + ${d3}`;
+    document.getElementById('valSum').textContent = sum;
+
+    document.getElementById('calcFinal').textContent = `${sum} + ${n1}`;
+    document.getElementById('valFinal').textContent = final;
+
+    // Comparison
+    document.getElementById('cmpCalc').textContent = final;
+    document.getElementById('cmpN4').textContent = n4;
+
+    const opEl = document.getElementById('cmpOp');
+    if (isWin) {
+      opEl.textContent = '≠';
+      opEl.className = 'compare-op not-equal';
+    } else {
+      opEl.textContent = '=';
+      opEl.className = 'compare-op equal';
+    }
+
+    // Verdict
+    const verdictEl = document.getElementById('verdict');
+    const iconEl = document.getElementById('verdictIcon');
+    const titleEl = document.getElementById('verdictTitle');
+    const subEl = document.getElementById('verdictSub');
+
+    // Remove old classes
+    verdictEl.classList.remove('win', 'lose');
+
+    if (isWin) {
+      verdictEl.classList.add('win');
+      iconEl.textContent = '🏆';
+      titleEl.textContent = '✅ Big Win Chance ඇති ටිකට් එකක්!';
+      subEl.textContent = `ගණනය කළ අගය (${final}) සහ 4 වැනි අංකය (${n4}) සමාන නොවේ.\nමෙම ටිකට් එකට Big Win Chance ඇත!`;
+    } else {
+      verdictEl.classList.add('lose');
+      iconEl.textContent = '❌';
+      titleEl.textContent = 'Big Win Chance නැති ටිකට් එකක්';
+      subEl.textContent = `ගණනය කළ අගය (${final}) සහ 4 වැනි අංකය (${n4}) සමාන වේ.\nමෙම ටිකට් එකට Big Win Chance නොමැත.`;
+    }
+
+    document.getElementById('resultSection').classList.add('show');
+    setTimeout(() => {
+      document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  function resetAll() {
+    inputs.forEach(i => { i.value = ''; });
+    document.getElementById('resultSection').classList.remove('show');
+    document.getElementById('errorMsg').classList.remove('show');
+    updateDots();
+    inputs[0].focus();
+  }
+</script>
+</body>
+</html>
